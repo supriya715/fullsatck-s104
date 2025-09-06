@@ -7,11 +7,11 @@ pipeline {
     }
 
     environment {
-        TOMCAT_URL = 'http://51.21.158.152:9090/manager/text'
+        TOMCAT_URL = 'http://43.205.242.252:9090/manager/text'
         TOMCAT_USER = 'admin'
         TOMCAT_PASS = 'admin'
 
-        MAIN_REPO = 'https://github.com/satyavathiborra/fullstack-s201.git'
+        MAIN_REPO = 'https://github.com/supriya715/fullsatck-s104.git'
 
         BACKEND_DIR = 'crud_back'
         FRONTEND_DIR = 'crud_front'
@@ -23,17 +23,17 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: "${env.MAIN_REPO}"
+                git url: "${env.MAIN_REPO}", branch: 'main'
             }
         }
 
         stage('Build React Frontend') {
             steps {
-                script {
-                    def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-                    env.PATH = "${nodeHome}/bin:${env.PATH}"
-                }
                 dir("${env.FRONTEND_DIR}") {
+                    script {
+                        def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                        env.PATH = "${nodeHome}/bin:${env.PATH}"
+                    }
                     sh 'npm install'
                     sh 'npm run build'
                 }
@@ -56,21 +56,39 @@ pipeline {
             steps {
                 dir("${env.BACKEND_DIR}") {
                     sh 'mvn clean package'
-                    sh 'mv target/*.war target/springapp1.war'
+                    sh "mv target/*.war target/springapp1.war"
                 }
             }
         }
 
-        stage('Deploy Spring Boot WAR') {
+        stage('Deploy Backend to Tomcat (/springapp1)') {
             steps {
-                sh "curl -u ${env.TOMCAT_USER}:${env.TOMCAT_PASS} --upload-file \"${env.BACKEND_WAR}\" \"${env.TOMCAT_URL}/deploy?path=/springapp1&update=true\""
+                sh """
+                    curl -u ${TOMCAT_USER}:${TOMCAT_PASS} \
+                        --upload-file ${BACKEND_WAR} \
+                        "${TOMCAT_URL}/deploy?path=/springapp1&update=true"
+                """
             }
         }
 
-        stage('Deploy Frontend WAR') {
+        stage('Deploy Frontend to Tomcat (/frontapp1)') {
             steps {
-                sh "curl -u ${env.TOMCAT_USER}:${env.TOMCAT_PASS} --upload-file \"${env.FRONTEND_WAR}\" \"${env.TOMCAT_URL}/deploy?path=/frontapp1&update=true\""
+                sh """
+                    curl -u ${TOMCAT_USER}:${TOMCAT_PASS} \
+                        --upload-file ${FRONTEND_WAR} \
+                        "${TOMCAT_URL}/deploy?path=/frontapp1&update=true"
+                """
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Backend deployed: http://43.205.242.252:9090/springapp1"
+            echo "✅ Frontend deployed: http://43.205.242.252:9090/frontapp1"
+        }
+        failure {
+            echo "❌ Build or deployment failed"
         }
     }
 }
