@@ -23,7 +23,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git url:'https://github.com/supriya715/fullsatck-s104.git', branch: 'main'
+                git branch: 'main', url: "${env.MAIN_REPO}"
             }
         }
 
@@ -34,7 +34,10 @@ pipeline {
                         def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
                         env.PATH = "${nodeHome}/bin:${env.PATH}"
                     }
+                    // Clean install to avoid permission issues
+                    sh 'rm -rf node_modules'
                     sh 'npm install'
+                    sh 'chmod +x node_modules/.bin/vite'  // Fix permission issue
                     sh 'npm run build'
                 }
             }
@@ -56,7 +59,7 @@ pipeline {
             steps {
                 dir("${env.BACKEND_DIR}") {
                     sh 'mvn clean package'
-                    sh "mv target/*.war target/springapp1.war"
+                    sh 'mv target/*.war target/springapp1.war'
                 }
             }
         }
