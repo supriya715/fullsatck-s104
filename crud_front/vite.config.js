@@ -3,9 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // important for Tomcat deployment
-  build: {
-    outDir: 'dist',
-  }
+  base: '/frontapp1/'   // <- Add this line
 });
-
