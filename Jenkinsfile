@@ -23,7 +23,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git url: "${env.MAIN_REPO}", branch: 'main'
+                git url:'https://github.com/supriya715/fullsatck-s104.git', branch: 'main'
             }
         }
 
