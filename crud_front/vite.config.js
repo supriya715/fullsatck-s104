@@ -1,8 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/frontend/',  // important for Tomcat context path
-  plugins: [react()]
-})
+  plugins: [react()],
+  base: './', // important for Tomcat deployment
+  build: {
+    outDir: 'dist',
+  }
+});
 
